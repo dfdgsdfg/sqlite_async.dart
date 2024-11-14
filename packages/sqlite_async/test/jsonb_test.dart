@@ -41,7 +41,7 @@ void main() {
         await tx.execute(
             'CREATE TABLE users_json(id INTEGER PRIMARY KEY AUTOINCREMENT, json TEXT)');
         await tx.execute(
-            'CREATE TABLE users_jsonb(id INTEGER PRIMARY KEY AUTOINCREMENT, json BLOB)');
+            'CREATE TABLE users_jsonb(id INTEGER PRIMARY KEY AUTOINCREMENT, jsonb BLOB)');
       });
     }
 
@@ -72,12 +72,12 @@ void main() {
       await createTables(db);
       final user = TestUser(id: 1, name: 'Bob', email: 'bob@example.org');
 
-      await db.execute("INSERT INTO users_jsonb(json) VALUES (jsonb(?))",
+      await db.execute("INSERT INTO users_jsonb(jsonb) VALUES (jsonb(?))",
           [jsonEncode(user.toJson())]);
 
       final result = await db.getOptional(
-          "SELECT json(json) FROM users_jsonb WHERE id = ? ORDER BY id", [1]);
-      final jsonString = result?['json(json)'];
+          "SELECT json(jsonb) FROM users_jsonb WHERE id = ? ORDER BY id", [1]);
+      final jsonString = result?['json(jsonb)'];
       final userFromDb = TestUser.fromMap(jsonDecode(jsonString!));
 
       expect(userFromDb.name, equals('Bob'));
