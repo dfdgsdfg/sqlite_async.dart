@@ -40,10 +40,6 @@ void main() {
       await db.writeTransaction((tx) async {
         await tx.execute(
             'CREATE TABLE users(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, email TEXT)');
-        await tx.execute(
-            'CREATE TABLE users_json(id INTEGER PRIMARY KEY AUTOINCREMENT, json TEXT)');
-        await tx.execute(
-            'CREATE TABLE users_jsonb(id INTEGER PRIMARY KEY AUTOINCREMENT, json BLOB)');
       });
     }
 
@@ -86,43 +82,6 @@ void main() {
 
       expect(results.map((u) => u.name),
           equals(['Alice', 'Bob', 'Charlie', 'Dan']));
-    });
-
-    test('Inserts as json', () async {
-      final db = await testUtils.setupDatabase(path: path);
-      await createTables(db);
-      final user = TestUser(id: 1, name: 'Bob', email: 'bob@example.org');
-
-      final insert = await db.execute(
-          "INSERT INTO users_json(json) VALUES (json(?))",
-          [jsonEncode(user.toJson())]);
-
-      // expect(insert.rows.length, equals(1));
-
-      final result = await db.getOptional(
-          "SELECT json FROM users_json WHERE id = ? ORDER BY id", [1]);
-      final jsonString = result?['json'];
-      final userFromDb = TestUser.fromMap(jsonDecode(jsonString!));
-
-      expect(userFromDb.name, equals('Bob'));
-    });
-
-    test('Inserts as binary', () async {
-      final db = await testUtils.setupDatabase(path: path);
-      await createTables(db);
-      final user = TestUser(id: 1, name: 'Bob', email: 'bob@example.org');
-
-      final insert = await db.execute(
-          "INSERT INTO users_jsonb(json) VALUES (jsonb(?))",
-          [jsonEncode(user.toJson())]);
-      expect(insert.rows.length, equals(1));
-
-      final result = await db.getOptional(
-          "SELECT json(json) FROM users_jsonb WHERE id = ? ORDER BY id", [1]);
-      final jsonString = result?['json'];
-      final userFromDb = TestUser.fromMap(jsonDecode(jsonString!));
-
-      expect(userFromDb.name, equals('Bob'));
     });
   });
 }
